@@ -3,29 +3,30 @@ using MarketPulse.Application.Interfaces;
 using MarketPulse.Application.Messaging;
 using MarketPulse.Application.Options;
 using MarketPulse.Domain.Events;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace MarketPulse.Infrastructure.Kafka;
 
 /// <summary>
-/// Consumes <c>market.normalized</c>. Offsets commit only after feature processing succeeds.
+/// Consumes <c>market.normalized</c>. Offsets commit only after features and anomaly persistence succeed.
 /// </summary>
 public sealed class KafkaNormalizedTickConsumer : IMarketEventConsumer, IDisposable
 {
     private readonly IConsumer<string, string> _consumer;
     private readonly IEventSerializer _serializer;
-    private readonly IFeatureProcessor _processor;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<KafkaNormalizedTickConsumer> _logger;
 
     public KafkaNormalizedTickConsumer(
         IOptions<KafkaOptions> options,
         IEventSerializer serializer,
-        IFeatureProcessor processor,
+        IServiceScopeFactory scopeFactory,
         ILogger<KafkaNormalizedTickConsumer> logger)
     {
         _serializer = serializer;
-        _processor = processor;
+        _scopeFactory = scopeFactory;
         _logger = logger;
         var kafka = options.Value;
         _consumer = new ConsumerBuilder<string, string>(new ConsumerConfig
@@ -73,7 +74,9 @@ public sealed class KafkaNormalizedTickConsumer : IMarketEventConsumer, IDisposa
                 continue;
             }
 
-            await _processor.ProcessAsync(envelope.Data, cancellationToken);
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var processor = scope.ServiceProvider.GetRequiredService<IFeatureProcessor>();
+            await processor.ProcessAsync(envelope.Data, cancellationToken);
             _consumer.Commit(result);
         }
 

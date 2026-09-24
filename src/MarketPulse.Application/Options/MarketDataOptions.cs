@@ -13,5 +13,5 @@ public sealed class MarketDataOptions
     /// <summary>Used only when Mode is Polling. Do not assume 60 seconds.</summary>
     public int PollingIntervalSeconds { get; set; } = 5;
 
-    public string[] Symbols { get; set; } = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN"];
+    public string[] Symbols { get; set; } = [];
 }

@@ -96,6 +96,18 @@ public sealed class RedisMarketFeatureStore : IMarketFeatureStore
         return JsonSerializer.Deserialize<MarketFeatures>(json!, Json);
     }
 
+    public async Task<MarketTick?> GetLatestTickAsync(string symbol, CancellationToken cancellationToken)
+    {
+        var db = _redis.GetDatabase();
+        var json = await db.StringGetAsync(LatestKey(symbol));
+        if (json.IsNullOrEmpty)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<MarketTick>(json!, Json);
+    }
+
     internal static string LatestKey(string symbol) => $"market:{symbol}:latest";
     internal static string WindowKey(string symbol) => $"market:{symbol}:window";
     internal static string FeaturesKey(string symbol) => $"market:{symbol}:features";

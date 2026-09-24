@@ -17,6 +17,7 @@ public class FeatureProcessorTests
         var processor = new FeatureProcessor(
             store,
             new FeatureCalculator(),
+            new NoOpAnomalyProcessor(),
             Options.Create(new FeatureProcessingOptions { RetentionMinutes = 60 }),
             NullLogger<FeatureProcessor>.Instance);
 
@@ -107,5 +108,33 @@ public class FeatureProcessorTests
             _features.TryGetValue(symbol, out var features);
             return Task.FromResult(features);
         }
+
+        public Task<MarketTick?> GetLatestTickAsync(string symbol, CancellationToken cancellationToken)
+        {
+            if (!_windows.TryGetValue(symbol, out var list) || list.Count == 0)
+            {
+                return Task.FromResult<MarketTick?>(null);
+            }
+
+            var last = list[^1];
+            return Task.FromResult<MarketTick?>(new MarketTick
+            {
+                EventId = last.EventId,
+                Symbol = symbol,
+                Timestamp = last.Timestamp,
+                Open = last.Open,
+                High = last.High,
+                Low = last.Low,
+                Close = last.Close,
+                Volume = last.Volume,
+                Source = "test"
+            });
+        }
+    }
+
+    private sealed class NoOpAnomalyProcessor : IAnomalyProcessor
+    {
+        public Task ProcessAsync(MarketTick tick, MarketFeatures features, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
     }
 }

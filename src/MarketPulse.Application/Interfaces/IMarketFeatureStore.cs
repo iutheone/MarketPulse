@@ -18,4 +18,6 @@ public interface IMarketFeatureStore
     Task SaveFeaturesAsync(MarketFeatures features, CancellationToken cancellationToken);
 
     Task<MarketFeatures?> GetFeaturesAsync(string symbol, CancellationToken cancellationToken);
+
+    Task<MarketTick?> GetLatestTickAsync(string symbol, CancellationToken cancellationToken);
 }

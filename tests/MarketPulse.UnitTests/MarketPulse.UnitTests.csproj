@@ -27,4 +27,7 @@
     <ProjectReference Include="..\..\src\MarketPulse.Infrastructure\MarketPulse.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\samples\**\*" CopyToOutputDirectory="PreserveNewest" Link="samples\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>

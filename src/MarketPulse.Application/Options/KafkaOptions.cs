@@ -9,4 +9,5 @@ public sealed class KafkaOptions
     public int NormalizedTopicPartitions { get; set; } = 6;
     public short ReplicationFactor { get; set; } = 1;
     public string FeatureProcessorGroupId { get; set; } = "marketpulse-feature-processor";
+    public string RealtimeGroupId { get; set; } = "marketpulse-api-anomalies";
 }

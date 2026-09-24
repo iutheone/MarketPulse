@@ -11,4 +11,5 @@ public static class KafkaTopics
 public static class EventTypes
 {
     public const string MarketTickNormalized = "market.tick.normalized";
+    public const string AnomalyDetected = "market.anomaly.detected";
 }

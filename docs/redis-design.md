@@ -1,6 +1,6 @@
-# Redis hot state (Phase 2)
+# Redis hot state
 
-Redis holds rolling windows and the latest feature snapshot. **PostgreSQL remains the durable source of truth** (Phase 3). Flushing Redis only loses hot state; Kafka can rebuild it.
+Redis holds rolling windows and the latest feature snapshot. **PostgreSQL is the durable source of truth**. Flushing Redis only loses hot state; Kafka can rebuild it.
 
 ## Keys
 
@@ -11,12 +11,12 @@ Redis holds rolling windows and the latest feature snapshot. **PostgreSQL remain
 | `market:{symbol}:features` | String (JSON `MarketFeatures`) | One read for the API. Recomputed on every tick; not a ledger. |
 | `market:{symbol}:volume:1m` / `5m` / `15m` | String (integer) | Cheap `GET` for operators (`redis-cli`) without JSON. |
 | `market:{symbol}:vwap` | Hash (`value`, `deviationPct`, `eventId`) | Field-level reads of VWAP without the full feature blob. |
-
-`market:anomalies:latest` is reserved for Phase 3.
+| `market:anomalies:latest` | List (JSON `AnomalyResult`, cap 100) | Operator peek. History lives in Postgres. |
+| `market:{symbol}:anomaly:latest` | String (JSON) | Last recorded anomaly for a symbol. |
 
 ## What we do not do
 
-- Query PostgreSQL on each market event.
+- Query PostgreSQL on each market event for feature math.
 - Treat Redis as history. Retention is `FeatureProcessing:RetentionMinutes` (default 60).
 
 ## Inspect locally
@@ -26,4 +26,5 @@ redis-cli GET market:AAPL:features
 redis-cli GET market:AAPL:volume:1m
 redis-cli HGETALL market:AAPL:vwap
 redis-cli ZCARD market:AAPL:window
+redis-cli LRANGE market:anomalies:latest 0 4
 ```

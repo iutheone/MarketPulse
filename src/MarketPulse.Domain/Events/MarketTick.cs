@@ -21,4 +21,5 @@ public sealed record MarketTick
 public static class SchemaVersions
 {
     public const int MarketTick = 1;
+    public const int Anomaly = 1;
 }
