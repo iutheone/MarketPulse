@@ -24,7 +24,7 @@ curl -X POST http://localhost:5082/api/v1/backtests \
   -d '{"source":"csv","csvFile":"replay-aapl.csv","symbols":["AAPL"]}'
 ```
 
-Redpanda is `localhost:9092`. Redis is `localhost:6379`. PostgreSQL is `localhost:5432` (`marketpulse` / `marketpulse`). Kafka UI is `http://localhost:8080`.
+Redpanda is `localhost:9092`. Redis is `localhost:6379`. PostgreSQL is `localhost:5432` (`marketpulse` / `marketpulse`). Kafka UI is `http://localhost:8080`. Prometheus is `http://localhost:9091`. Grafana is `http://localhost:3000` (admin/admin). API metrics: `http://localhost:5082/metrics`. Worker metrics: `http://localhost:9465/metrics`.
 
 After ticks flow:
 
@@ -34,6 +34,9 @@ curl http://localhost:5082/api/v1/stocks/AAPL/snapshot
 curl -X POST http://localhost:5082/api/v1/watchlists \
   -H "Content-Type: application/json" \
   -d '{"name":"core","symbols":["AAPL","NVDA"]}'
+curl -X POST http://localhost:5082/api/v1/alert-configurations \
+  -H "Content-Type: application/json" \
+  -d '{"symbol":"*","minSeverity":"High","channel":"webhook","destination":"http://127.0.0.1:9/hook","isEnabled":true}'
 ```
 
 Hub: `ws://localhost:5082/anomalyHub`. After reconnect, reload from REST. SignalR is not history.

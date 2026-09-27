@@ -64,6 +64,9 @@ namespace MarketPulse.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("AnomalyId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("AttemptedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -81,6 +84,9 @@ namespace MarketPulse.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnomalyId");
+
+                    b.HasIndex("AnomalyId", "ConfigurationId")
+                        .IsUnique();
 
                     b.ToTable("AlertDeliveries", (string)null);
                 });

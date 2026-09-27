@@ -26,7 +26,17 @@ export function HealthPage() {
   return (
     <section>
       <h2>System health</h2>
-      <p className="lede">Kafka, Redis, and PostgreSQL as reported by the API process.</p>
+      <p className="lede">
+        Kafka, Redis, and PostgreSQL as reported by the API process. Metrics:{" "}
+        <a href={`${api.url}/metrics`} target="_blank" rel="noreferrer">
+          {api.url}/metrics
+        </a>
+        . Grafana (local compose):{" "}
+        <a href="http://localhost:3000" target="_blank" rel="noreferrer">
+          http://localhost:3000
+        </a>{" "}
+        (admin/admin).
+      </p>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       {health ? (

@@ -94,6 +94,7 @@ public sealed class MarketPulseDbContext : DbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Status).HasMaxLength(32).IsRequired();
             entity.HasIndex(x => x.AnomalyId);
+            entity.HasIndex(x => new { x.AnomalyId, x.ConfigurationId }).IsUnique();
         });
 
         modelBuilder.Entity<BacktestRunRecord>(entity =>

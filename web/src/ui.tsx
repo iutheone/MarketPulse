@@ -21,6 +21,9 @@ export function Layout() {
         <NavLink to="/backtests" className={({ isActive }) => (isActive ? "active" : "")}>
           Replay / backtest
         </NavLink>
+        <NavLink to="/alerts" className={({ isActive }) => (isActive ? "active" : "")}>
+          Alerts
+        </NavLink>
       </nav>
       <main>
         <Outlet />

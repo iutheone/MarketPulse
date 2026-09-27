@@ -122,3 +122,22 @@ export type BacktestRun = {
   results: BacktestResult[];
   error?: string | null;
 };
+
+export type AlertConfiguration = {
+  id: string;
+  symbol: string;
+  minSeverity: string;
+  channel: string;
+  destination: string;
+  isEnabled: boolean;
+};
+
+export type AlertDelivery = {
+  id: string;
+  anomalyId: string;
+  configurationId?: string | null;
+  status: string;
+  attemptCount: number;
+  attemptedAt: string;
+  error?: string | null;
+};

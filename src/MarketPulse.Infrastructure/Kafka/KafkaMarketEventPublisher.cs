@@ -3,6 +3,7 @@ using Confluent.Kafka.Admin;
 using MarketPulse.Application.Interfaces;
 using MarketPulse.Application.Mapping;
 using MarketPulse.Application.Messaging;
+using MarketPulse.Application.Observability;
 using MarketPulse.Application.Options;
 using MarketPulse.Domain.Events;
 using Microsoft.Extensions.Logging;
@@ -81,6 +82,10 @@ public sealed class KafkaMarketEventPublisher : IMarketEventPublisher
 
     public async Task PublishAsync(MarketTick marketTick, CancellationToken cancellationToken)
     {
+        using var activity = MarketPulseTelemetry.Activity.StartActivity("MarketPulse.PublishTick");
+        activity?.SetTag("symbol", marketTick.Symbol);
+        activity?.SetTag("event.id", marketTick.EventId.ToString());
+
         var envelope = MarketEventMapper.ToEnvelope(marketTick);
         var payload = _serializer.Serialize(envelope);
 
@@ -98,6 +103,7 @@ public sealed class KafkaMarketEventPublisher : IMarketEventPublisher
             },
             cancellationToken);
 
+        MarketPulseTelemetry.TicksPublished.Add(1);
         _logger.LogInformation(
             "Published market event {EventId} for {Symbol} to {Topic} partition {Partition} offset {Offset}",
             marketTick.EventId,

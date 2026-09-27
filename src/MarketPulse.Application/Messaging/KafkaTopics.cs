@@ -12,4 +12,6 @@ public static class EventTypes
 {
     public const string MarketTickNormalized = "market.tick.normalized";
     public const string AnomalyDetected = "market.anomaly.detected";
+    public const string AlertDispatch = "alert.dispatch";
+    public const string AlertDeadLetter = "alert.dead-letter";
 }

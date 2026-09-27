@@ -1,4 +1,5 @@
 using MarketPulse.Application.Interfaces;
+using MarketPulse.Application.Observability;
 using MarketPulse.Application.Options;
 using MarketPulse.Domain.Anomaly;
 using MarketPulse.Domain.Events;
@@ -45,8 +46,14 @@ public sealed class AnomalyProcessor : IAnomalyProcessor
             return;
         }
 
+        using var activity = MarketPulseTelemetry.Activity.StartActivity("MarketPulse.RecordAnomaly");
+        activity?.SetTag("symbol", result.Symbol);
+        activity?.SetTag("anomaly.id", result.AnomalyId.ToString());
+        activity?.SetTag("severity", result.Severity.ToString());
+
         await _feed.PushAsync(result, cancellationToken);
         await _publisher.PublishAsync(result, cancellationToken);
+        MarketPulseTelemetry.AnomaliesRecorded.Add(1);
         _logger.LogInformation(
             "Recorded anomaly {AnomalyId} for {Symbol} score={Score} severity={Severity} event={EventId}",
             result.AnomalyId,

@@ -72,5 +72,20 @@ export const api = {
     request<import("./types").BacktestRun>("/api/v1/backtests", {
       method: "POST",
       body: JSON.stringify(payload)
-    })
+    }),
+  alertConfigurations: () => request<import("./types").AlertConfiguration[]>("/api/v1/alert-configurations"),
+  createAlertConfiguration: (payload: {
+    symbol: string;
+    minSeverity: string;
+    channel: string;
+    destination: string;
+    isEnabled: boolean;
+  }) =>
+    request<import("./types").AlertConfiguration>("/api/v1/alert-configurations", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  deleteAlertConfiguration: (id: string) =>
+    request<void>(`/api/v1/alert-configurations/${id}`, { method: "DELETE" }),
+  alertDeliveries: () => request<import("./types").AlertDelivery[]>("/api/v1/alert-deliveries")
 };

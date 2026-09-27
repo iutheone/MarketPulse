@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using MarketPulse.Application.Interfaces;
+using MarketPulse.Application.Observability;
 using MarketPulse.Application.Options;
 using MarketPulse.Domain.Events;
 using MarketPulse.Domain.Features;
@@ -31,6 +33,11 @@ public sealed class FeatureProcessor : IFeatureProcessor
 
     public async Task ProcessAsync(MarketTick tick, CancellationToken cancellationToken)
     {
+        using var activity = MarketPulseTelemetry.Activity.StartActivity("MarketPulse.ProcessTick");
+        activity?.SetTag("symbol", tick.Symbol);
+        activity?.SetTag("event.id", tick.EventId.ToString());
+        var started = Stopwatch.GetTimestamp();
+
         var retention = TimeSpan.FromMinutes(Math.Max(15, _options.RetentionMinutes));
         await _store.AppendAsync(tick, retention, cancellationToken);
 
@@ -39,6 +46,9 @@ public sealed class FeatureProcessor : IFeatureProcessor
         var features = _calculator.Calculate(tick.Symbol, window);
         await _store.SaveFeaturesAsync(features, cancellationToken);
         await _anomalyProcessor.ProcessAsync(tick, features, cancellationToken);
+
+        MarketPulseTelemetry.TicksProcessed.Add(1);
+        MarketPulseTelemetry.FeatureDurationMs.Record(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
 
         _logger.LogInformation(
             "Computed features for {Symbol} from {EventId}: RVOL={RelativeVolume} vol1m={Volume1m} vwap={Vwap}",

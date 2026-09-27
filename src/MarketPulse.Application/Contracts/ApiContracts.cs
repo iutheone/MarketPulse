@@ -161,3 +161,33 @@ public sealed class BacktestResultDto
     public decimal? MeanScore { get; init; }
     public required string Notes { get; init; }
 }
+
+public sealed class AlertConfigurationDto
+{
+    public required Guid Id { get; init; }
+    public required string Symbol { get; init; }
+    public required string MinSeverity { get; init; }
+    public required string Channel { get; init; }
+    public required string Destination { get; init; }
+    public required bool IsEnabled { get; init; }
+}
+
+public sealed class UpsertAlertConfigurationRequest
+{
+    public string Symbol { get; set; } = "*";
+    public string MinSeverity { get; set; } = "High";
+    public string Channel { get; set; } = "webhook";
+    public string Destination { get; set; } = string.Empty;
+    public bool IsEnabled { get; set; } = true;
+}
+
+public sealed class AlertDeliveryDto
+{
+    public required Guid Id { get; init; }
+    public required Guid AnomalyId { get; init; }
+    public Guid? ConfigurationId { get; init; }
+    public required string Status { get; init; }
+    public required int AttemptCount { get; init; }
+    public required DateTimeOffset AttemptedAt { get; init; }
+    public string? Error { get; init; }
+}

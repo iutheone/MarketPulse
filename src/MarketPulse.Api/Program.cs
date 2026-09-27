@@ -6,14 +6,20 @@ using MarketPulse.Infrastructure;
 using MarketPulse.Infrastructure.Kafka;
 using MarketPulse.Infrastructure.Observability;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OpenTelemetry.Metrics;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Logging.AddJsonConsole();
+builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.TimestampFormat = "O";
+});
 
 builder.Services.AddMarketPulseInfrastructure(builder.Configuration);
+builder.AddMarketPulseApiTelemetry();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -64,13 +70,15 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Ok(new
 {
     service = "MarketPulse.Api",
-    phase = 7,
+    phase = 9,
     note = "Anomaly scores describe unusual activity. They are not buy/sell advice.",
-    hub = AnomalyHub.Path
+    hub = AnomalyHub.Path,
+    metrics = "/metrics"
 }));
 
 app.MapControllers();
 app.MapHub<AnomalyHub>(AnomalyHub.Path);
+app.MapPrometheusScrapingEndpoint();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {

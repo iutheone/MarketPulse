@@ -76,6 +76,7 @@ public sealed class AlertDeliveryRecord
     public Guid AnomalyId { get; set; }
     public Guid? ConfigurationId { get; set; }
     public string Status { get; set; } = "pending";
+    public int AttemptCount { get; set; }
     public DateTimeOffset AttemptedAt { get; set; }
     public string? Error { get; set; }
 }

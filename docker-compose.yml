@@ -47,5 +47,28 @@ services:
       KAFKA_CLUSTERS_0_NAME: marketpulse
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: redpanda:9092
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
 volumes:
   marketpulse-pg:

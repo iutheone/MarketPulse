@@ -8,6 +8,7 @@ import { WatchlistPage } from "./pages/Watchlist";
 import { DetectionRulesPage } from "./pages/DetectionRules";
 import { HealthPage } from "./pages/Health";
 import { BacktestsPage } from "./pages/Backtests";
+import { AlertsPage } from "./pages/Alerts";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/rules" element={<DetectionRulesPage />} />
           <Route path="/health" element={<HealthPage />} />
           <Route path="/backtests" element={<BacktestsPage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

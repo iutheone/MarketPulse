@@ -2,7 +2,7 @@
 
 Real-time market-data **anomaly detection** platform (engineering/analytics). An anomaly score describes unusual volume/price behavior. It is **not** a price forecast and **not** a buy/sell recommendation.
 
-Current milestone: **Phase 7 — historical replay and backtesting**.
+Current milestone: **Phase 9 — observability**.
 
 ```
 Provider / CSV replay
@@ -12,6 +12,9 @@ market.normalized
 FeatureProcessor (Redis) + AnomalyDetectionEngine
         ↓
 PostgreSQL  then  market.anomalies → SignalR /anomalyHub → React
+                        ↓
+                 alerts.outbox → webhook
+        metrics → Prometheus :9091 → Grafana :3000
 ```
 
 ## Prerequisites
@@ -42,7 +45,7 @@ dotnet run --project src/MarketPulse.Api
 cd web && npm install && npm run dev
 ```
 
-Open http://localhost:5173 — **Replay / backtest** runs the sample CSV in process, or publishes it to Kafka.
+Open http://localhost:5173. Metrics: http://localhost:5082/metrics (API) and http://localhost:9465/metrics (workers). Grafana: http://localhost:3000 (`admin`/`admin`). Prometheus: http://localhost:9091.
 
 Backtest **record rate** is anomalies/bars for the current rule set, not a trading hit rate.
 
@@ -67,7 +70,7 @@ Backtest **record rate** is anomalies/bars for the current rule set, not a tradi
 | `MarketPulse.Domain` | Ticks, features, anomaly scoring |
 | `MarketPulse.Application` | Ports, processors, replay/backtest |
 | `MarketPulse.Infrastructure` | Twelve Data, Kafka, Redis, Postgres |
-| `MarketPulse.Workers` | Ingestion (or replay) + feature consumer |
+| `MarketPulse.Workers` | Ingestion (or replay) + feature consumer + alert workers |
 | `MarketPulse.Api` | REST + SignalR |
 | `web/` | React dashboard |
 
@@ -82,4 +85,5 @@ Backtest **record rate** is anomalies/bars for the current rule set, not a tradi
 - [docs/adr/ADR-004-provider-abstraction.md](docs/adr/ADR-004-provider-abstraction.md)
 - [docs/adr/ADR-005-symbol-kafka-partitioning.md](docs/adr/ADR-005-symbol-kafka-partitioning.md)
 - [docs/adr/ADR-006-signalr-fanout.md](docs/adr/ADR-006-signalr-fanout.md)
-- [docs/adr/ADR-007-historical-replay.md](docs/adr/ADR-007-historical-replay.md)
+- [docs/adr/ADR-008-alert-outbox.md](docs/adr/ADR-008-alert-outbox.md)
+- [docs/adr/ADR-009-opentelemetry.md](docs/adr/ADR-009-opentelemetry.md)

@@ -1,3 +1,4 @@
+using MarketPulse.Application.Alerts;
 using MarketPulse.Application.Anomaly;
 using MarketPulse.Application.Features;
 using MarketPulse.Application.Interfaces;
@@ -6,6 +7,7 @@ using MarketPulse.Application.Replay;
 using MarketPulse.Domain.Anomaly;
 using MarketPulse.Domain.Features;
 using MarketPulse.Domain.Interfaces;
+using MarketPulse.Infrastructure.Alerts;
 using MarketPulse.Infrastructure.Kafka;
 using MarketPulse.Infrastructure.MarketData.Replay;
 using MarketPulse.Infrastructure.MarketData.Synthetic;
@@ -38,6 +40,7 @@ public static class DependencyInjection
         services.Configure<PostgresOptions>(configuration.GetSection(PostgresOptions.SectionName));
         services.Configure<SignalROptions>(configuration.GetSection(SignalROptions.SectionName));
         services.Configure<ReplayOptions>(configuration.GetSection(ReplayOptions.SectionName));
+        services.Configure<AlertOptions>(configuration.GetSection(AlertOptions.SectionName));
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddSingleton<IEventSerializer, JsonEventSerializer>();
@@ -51,6 +54,17 @@ public static class DependencyInjection
         });
         services.AddScoped<IAnomalyProcessor, AnomalyProcessor>();
         services.AddScoped<IFeatureProcessor, FeatureProcessor>();
+        services.AddScoped<IAlertDispatcher, AlertDispatcher>();
+        services.AddScoped<IAlertDeliveryProcessor, AlertDeliveryProcessor>();
+        services.AddHttpClient(HttpWebhookClient.HttpClientName, (sp, client) =>
+        {
+            var alerts = sp.GetRequiredService<IOptions<AlertOptions>>().Value;
+            client.Timeout = TimeSpan.FromSeconds(Math.Max(2, alerts.WebhookTimeoutSeconds));
+        });
+        services.AddSingleton<IWebhookClient, HttpWebhookClient>();
+        services.AddSingleton<IAlertOutboxPublisher, KafkaAlertOutboxPublisher>();
+        services.AddSingleton<IAlertDispatchConsumer, KafkaAlertDispatcherConsumer>();
+        services.AddSingleton<IAlertDeliveryConsumer, KafkaAlertDeliveryConsumer>();
         services.AddSingleton<IMarketEventConsumer, KafkaNormalizedTickConsumer>();
         services.AddSingleton<KafkaClusterHealthCheck>();
         services.AddSingleton<RedisHealthCheck>();
@@ -95,6 +109,9 @@ public static class DependencyInjection
         services.AddScoped<IHistoricalReplayService, HistoricalReplayService>();
         services.AddScoped<IBacktestStore, PostgresBacktestStore>();
         services.AddScoped<IBacktestService, BacktestService>();
+        services.AddScoped<PostgresAlertStore>();
+        services.AddScoped<IAlertConfigurationStore>(sp => sp.GetRequiredService<PostgresAlertStore>());
+        services.AddScoped<IAlertDeliveryStore>(sp => sp.GetRequiredService<PostgresAlertStore>());
     }
 
     private static IServiceCollection AddMarketDataProvider(

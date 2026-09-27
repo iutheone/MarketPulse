@@ -1,0 +1,83 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Ticks processed",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(marketpulse_ticks_processed_total[1m])",
+          "legendFormat": "processed",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "Anomalies recorded",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(marketpulse_anomalies_recorded_total[1m])",
+          "legendFormat": "anomalies",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Alert outcomes",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(marketpulse_alerts_delivered_total[1m])",
+          "legendFormat": "delivered",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(marketpulse_alerts_failed_total[1m])",
+          "legendFormat": "failed",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "title": "Feature duration",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(marketpulse_features_duration_milliseconds_sum[1m]) / rate(marketpulse_features_duration_milliseconds_count[1m])",
+          "legendFormat": "p mean",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["marketpulse"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "MarketPulse pipeline",
+  "uid": "marketpulse-pipeline",
+  "version": 1
+}
