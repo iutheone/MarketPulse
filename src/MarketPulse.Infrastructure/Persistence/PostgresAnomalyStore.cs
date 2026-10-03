@@ -25,56 +25,60 @@ public sealed class PostgresAnomalyStore : IAnomalyStore
         _db = db;
     }
 
-    public async Task<bool> TryRecordAsync(MarketTick tick, AnomalyResult? anomaly, CancellationToken cancellationToken)
+    public Task<bool> TryRecordAsync(MarketTick tick, AnomalyResult? anomaly, CancellationToken cancellationToken)
     {
-        await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
-        try
+        var strategy = _db.Database.CreateExecutionStrategy();
+        return strategy.ExecuteAsync(async () =>
         {
-            _db.ProcessedEvents.Add(new ProcessedEventRecord
+            await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                EventId = tick.EventId,
-                Symbol = tick.Symbol,
-                ProcessedAt = DateTimeOffset.UtcNow
-            });
+                _db.ProcessedEvents.Add(new ProcessedEventRecord
+                {
+                    EventId = tick.EventId,
+                    Symbol = tick.Symbol,
+                    ProcessedAt = DateTimeOffset.UtcNow
+                });
 
-            _db.MarketEvents.Add(new MarketEventRecord
-            {
-                EventId = tick.EventId,
-                Symbol = tick.Symbol,
-                Timestamp = tick.Timestamp,
-                Source = tick.Source,
-                SchemaVersion = tick.SchemaVersion,
-                PayloadJson = JsonSerializer.Serialize(tick, Json)
-            });
+                _db.MarketEvents.Add(new MarketEventRecord
+                {
+                    EventId = tick.EventId,
+                    Symbol = tick.Symbol,
+                    Timestamp = tick.Timestamp,
+                    Source = tick.Source,
+                    SchemaVersion = tick.SchemaVersion,
+                    PayloadJson = JsonSerializer.Serialize(tick, Json)
+                });
 
-            _db.MarketBars.Add(new MarketBarRecord
-            {
-                EventId = tick.EventId,
-                Symbol = tick.Symbol,
-                Timestamp = tick.Timestamp,
-                Open = tick.Open,
-                High = tick.High,
-                Low = tick.Low,
-                Close = tick.Close,
-                Volume = tick.Volume,
-                Source = tick.Source
-            });
+                _db.MarketBars.Add(new MarketBarRecord
+                {
+                    EventId = tick.EventId,
+                    Symbol = tick.Symbol,
+                    Timestamp = tick.Timestamp,
+                    Open = tick.Open,
+                    High = tick.High,
+                    Low = tick.Low,
+                    Close = tick.Close,
+                    Volume = tick.Volume,
+                    Source = tick.Source
+                });
 
-            if (anomaly is not null)
-            {
-                _db.Anomalies.Add(ToRecord(anomaly));
+                if (anomaly is not null)
+                {
+                    _db.Anomalies.Add(ToRecord(anomaly));
+                }
+
+                await _db.SaveChangesAsync(cancellationToken);
+                await tx.CommitAsync(cancellationToken);
+                return true;
             }
-
-            await _db.SaveChangesAsync(cancellationToken);
-            await tx.CommitAsync(cancellationToken);
-            return true;
-        }
-        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
-        {
-            await tx.RollbackAsync(cancellationToken);
-            _db.ChangeTracker.Clear();
-            return false;
-        }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                await tx.RollbackAsync(cancellationToken);
+                _db.ChangeTracker.Clear();
+                return false;
+            }
+        });
     }
 
     public async Task<AnomalyResult?> GetByIdAsync(Guid id, CancellationToken cancellationToken)

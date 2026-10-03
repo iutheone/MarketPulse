@@ -25,6 +25,11 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   postgres:
     image: postgres:16-alpine
@@ -36,6 +41,11 @@ services:
       POSTGRES_DB: marketpulse
     volumes:
       - marketpulse-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketpulse -d marketpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
@@ -69,6 +79,63 @@ services:
     volumes:
       - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: deploy/docker/Api.Dockerfile
+    ports:
+      - "5082:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Kafka__BootstrapServers: redpanda:9092
+      Redis__ConnectionString: redis:6379,abortConnect=false,connectTimeout=2000
+      Postgres__ConnectionString: Host=postgres;Port=5432;Database=marketpulse;Username=marketpulse;Password=marketpulse
+      SignalR__AllowedOrigins__0: http://localhost:8088
+      SignalR__UseRedisBackplane: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+
+  workers:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: deploy/docker/Workers.Dockerfile
+    ports:
+      - "9465:9465"
+    environment:
+      MarketData__Provider: Synthetic
+      MarketData__Mode: Streaming
+      Kafka__BootstrapServers: redpanda:9092
+      Redis__ConnectionString: redis:6379,abortConnect=false,connectTimeout=2000
+      Postgres__ConnectionString: Host=postgres;Port=5432;Database=marketpulse;Username=marketpulse;Password=marketpulse
+      Observability__WorkerMetricsUrl: http://+:9465/
+      TwelveData__ApiKey: ${TWELVE_DATA_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: deploy/docker/Web.Dockerfile
+      args:
+        VITE_API_URL: ""
+    ports:
+      - "8088:80"
+    depends_on:
+      - api
 
 volumes:
   marketpulse-pg:

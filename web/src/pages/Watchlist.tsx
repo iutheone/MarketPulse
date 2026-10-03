@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import type { Watchlist } from "../types";
-import { Disclaimer, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, formatTime } from "../ui";
 
 export function WatchlistPage() {
   const [lists, setLists] = useState<Watchlist[]>([]);
@@ -41,8 +41,9 @@ export function WatchlistPage() {
 
   return (
     <section>
-      <h2>Watchlists</h2>
-      <p className="lede">Named symbol groups stored in PostgreSQL. They do not drive ingestion yet.</p>
+      <PageHeader kicker="Universe" title="Watchlists">
+        <p className="lede">Named symbol groups stored in PostgreSQL. They do not drive ingestion yet.</p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       <form className="stack" onSubmit={(event) => void onSubmit(event)}>
@@ -57,18 +58,18 @@ export function WatchlistPage() {
           Save list
         </button>
       </form>
-      {lists.length === 0 ? <p className="muted">No lists yet.</p> : null}
+      {lists.length === 0 ? <EmptyState>No lists yet.</EmptyState> : null}
       <div className="list">
         {lists.map((list) => (
           <article className="card" key={list.id}>
             <strong>{list.name}</strong>
-            <p>
+            <div className="chip-row">
               {list.symbols.map((symbol) => (
-                <span key={symbol}>
-                  <Link to={`/stocks/${symbol}`}>{symbol}</Link>{" "}
-                </span>
+                <Link className="chip" key={symbol} to={`/stocks/${symbol}`}>
+                  {symbol}
+                </Link>
               ))}
-            </p>
+            </div>
             <p className="muted">{formatTime(list.createdAt)}</p>
           </article>
         ))}

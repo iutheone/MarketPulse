@@ -20,7 +20,7 @@ The anomaly **score is not a probability and not a trade signal**.
 
 ## Replay and backtest
 
-CSV (`samples/*.csv`) or PostgreSQL `MarketBars` become `MarketTick`s with `source=csv` (or the stored bar source). Replay publishes to **`market.normalized`**. Downstream feature and anomaly processors cannot tell live from historical except by `source` and EventId.
+CSV (`samples/demo-session.csv` or `samples/replay-aapl.csv`) or PostgreSQL `MarketBars` become `MarketTick`s with `source=csv` (or the stored bar source). Replay publishes to **`market.normalized`**. Downstream feature and anomaly processors cannot tell live from historical except by `source` and EventId.
 
 In-process backtests walk `FeatureCalculator` + `AnomalyDetectionEngine` without Kafka. Stored `HitRate` is **record rate** (anomalies / bars), not forecast accuracy. `MarketData:Provider=Replay` runs the sample CSV once on worker start instead of live ingestion.
 
@@ -31,6 +31,10 @@ Enabled webhook rows in `AlertConfigurations` are matched after an anomaly is on
 ## Observability
 
 JSON console logs include scopes. API `/metrics` and worker `:9465/metrics` are Prometheus scrapes. Grafana is provisioned from `deploy/grafana`. Counters are pipeline rates, not trading statistics.
+
+## Shipping
+
+Dockerfiles live in `deploy/docker/`. Compose profile `app` runs API, workers, and nginx. Kubernetes demo manifests are in `deploy/k8s/`. GitHub Actions (`.github/workflows/ci.yml`) runs tests, frontend production build, image builds, and vulnerability listings. API keys stay in user-secrets, env, or cluster Secrets.
 
 ## Query API
 

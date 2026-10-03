@@ -1,13 +1,13 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import type { BacktestRun, ReplayResult } from "../types";
-import { Disclaimer, formatNumber, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, formatNumber, formatTime } from "../ui";
 
 export function BacktestsPage() {
   const [runs, setRuns] = useState<BacktestRun[]>([]);
   const [source, setSource] = useState("csv");
-  const [csvFile, setCsvFile] = useState("replay-aapl.csv");
-  const [symbols, setSymbols] = useState("AAPL");
+  const [csvFile, setCsvFile] = useState("demo-session.csv");
+  const [symbols, setSymbols] = useState("AAPL, MSFT, NVDA, TSLA, AMZN");
   const [error, setError] = useState<string | null>(null);
   const [replayNote, setReplayNote] = useState<ReplayResult | null>(null);
 
@@ -57,11 +57,12 @@ export function BacktestsPage() {
 
   return (
     <section>
-      <h2>Replay &amp; backtest</h2>
-      <p className="lede">
-        CSV replay publishes to <code>market.normalized</code> like live ticks. Backtest walks the same engine in
-        process and never produces a trading result.
-      </p>
+      <PageHeader kicker="Research" title="Replay & backtest">
+        <p className="lede">
+          CSV replay publishes to <code>market.normalized</code> like live ticks. Backtest walks the same engine in
+          process and never produces a trading result.
+        </p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       <form className="stack" onSubmit={(event) => void onBacktest(event)}>
@@ -83,9 +84,10 @@ export function BacktestsPage() {
           Replay published {replayNote.published} / {replayNote.barsRead} ticks. {replayNote.note}
         </p>
       ) : null}
-      {runs.length === 0 ? <p className="muted">No backtest runs stored yet.</p> : null}
+      {runs.length === 0 ? <EmptyState>No backtest runs stored yet.</EmptyState> : null}
+      <div className="list">
       {runs.map((run) => (
-        <article className="card" key={run.id} style={{ marginBottom: 10 }}>
+        <article className="card" key={run.id}>
           <strong>{run.status}</strong> · {formatTime(run.startedAt)}
           {run.results.map((result) => (
             <p key={result.id}>
@@ -96,6 +98,7 @@ export function BacktestsPage() {
           <p className="muted">{run.results[0]?.notes ?? run.error}</p>
         </article>
       ))}
+      </div>
     </section>
   );
 }

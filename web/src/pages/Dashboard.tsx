@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api";
 import { connectAnomalyHub, type HubStatus } from "../signalr";
 import type { Anomaly, AnomalyLive } from "../types";
-import { Disclaimer, SeverityBadge, formatNumber, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, ScoreMeter, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function DashboardPage() {
   const [symbol, setSymbol] = useState("");
@@ -93,10 +93,11 @@ export function DashboardPage() {
 
   return (
     <section>
-      <h2>Dashboard</h2>
-      <p className="lede">
-        Latest recorded anomalies. Live rows arrive over SignalR; a reconnect reloads this list from REST.
-      </p>
+      <PageHeader kicker="Live feed" title="Dashboard">
+        <p className="lede">
+          Latest recorded anomalies. Live rows arrive over SignalR; a reconnect reloads this list from REST.
+        </p>
+      </PageHeader>
       <Disclaimer />
       <div className="toolbar">
         <input
@@ -115,12 +116,16 @@ export function DashboardPage() {
           Search
         </button>
         <span className="live">
-          Hub <span className={`badge ${status}`}>{status}</span> · {total} stored
+          Hub <span className={`badge ${status} ${status === "connected" ? "pulse" : ""}`}>{status}</span> · {total}{" "}
+          stored
         </span>
       </div>
       {error ? <p className="error">{error}</p> : null}
-      {empty ? <p className="muted">No anomalies yet. Quiet prints stay below the record threshold.</p> : null}
+      {empty ? (
+        <EmptyState>No anomalies yet. Quiet prints stay below the record threshold.</EmptyState>
+      ) : null}
       {rows.length > 0 ? (
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -139,24 +144,29 @@ export function DashboardPage() {
             {rows.map((row) => (
               <tr key={row.id}>
                 <td>
-                  <Link to={`/stocks/${row.symbol}`}>{row.symbol}</Link>
+                  <Link className="ticker" to={`/stocks/${row.symbol}`}>
+                    {row.symbol}
+                  </Link>
                 </td>
                 <td>{formatNumber(row.lastPrice)}</td>
                 <td>{formatNumber(row.volume1m, 0)}</td>
                 <td>{formatNumber(row.relativeVolume)}</td>
                 <td>{formatNumber(row.priceChangePercent)}%</td>
                 <td>
-                  <Link to={`/anomalies/${row.id}`}>{formatNumber(row.score, 1)}</Link>
+                  <Link to={`/anomalies/${row.id}`}>
+                    <ScoreMeter score={row.score} severity={row.severity} />
+                  </Link>
                 </td>
                 <td>
                   <SeverityBadge severity={row.severity} />
                 </td>
                 <td>{formatTime(row.detectedAt)}</td>
-                <td>{row.reasons[0] ?? "—"}</td>
+                <td className="reason">{row.reasons[0] ?? "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       ) : null}
     </section>
   );

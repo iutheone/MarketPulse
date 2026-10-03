@@ -5,8 +5,8 @@ scrape_configs:
   - job_name: marketpulse-api
     metrics_path: /metrics
     static_configs:
-      - targets: ["host.docker.internal:5082"]
+      - targets: ["api:8080", "host.docker.internal:5082"]
   - job_name: marketpulse-workers
     metrics_path: /metrics
     static_configs:
-      - targets: ["host.docker.internal:9465"]
+      - targets: ["workers:9465", "host.docker.internal:9465"]

@@ -85,6 +85,39 @@ public class TwelveDataRestProviderTests
         Assert.Throws<NotSupportedException>(() => provider.StreamAsync(["AAPL"], CancellationToken.None));
     }
 
+    [Fact]
+    public async Task DemoFixture_MapsVendorShapedTimeSeriesJson()
+    {
+        var json = File.ReadAllText(FindFixture());
+        var handler = new StubHandler(HttpStatusCode.OK, json);
+        var provider = CreateProvider(handler);
+        var bars = await provider.GetLatestAsync(["AAPL"], CancellationToken.None);
+
+        var bar = Assert.Single(bars);
+        Assert.Equal("AAPL", bar.Symbol);
+        Assert.Equal("twelvedata", bar.Source);
+        Assert.True(bar.Volume > 0);
+        Assert.Equal(new DateTimeOffset(2026, 9, 18, 15, 9, 0, TimeSpan.Zero), bar.Timestamp);
+    }
+
+    private static string FindFixture()
+    {
+        var dir = AppContext.BaseDirectory;
+        const string relative = "samples/twelvedata/time_series_aapl.json";
+        for (var i = 0; i < 8; i++)
+        {
+            var candidate = Path.Combine(dir, relative);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            dir = Directory.GetParent(dir)?.FullName ?? dir;
+        }
+
+        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", relative));
+    }
+
     private static TwelveDataRestProvider CreateProvider(StubHandler handler)
     {
         return new TwelveDataRestProvider(

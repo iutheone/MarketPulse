@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { SystemHealth } from "../types";
-import { Disclaimer } from "../ui";
+import { Disclaimer, PageHeader } from "../ui";
 
 export function HealthPage() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
@@ -25,18 +25,19 @@ export function HealthPage() {
 
   return (
     <section>
-      <h2>System health</h2>
-      <p className="lede">
-        Kafka, Redis, and PostgreSQL as reported by the API process. Metrics:{" "}
-        <a href={`${api.url}/metrics`} target="_blank" rel="noreferrer">
-          {api.url}/metrics
-        </a>
-        . Grafana (local compose):{" "}
-        <a href="http://localhost:3000" target="_blank" rel="noreferrer">
-          http://localhost:3000
-        </a>{" "}
-        (admin/admin).
-      </p>
+      <PageHeader kicker="Operations" title="System health">
+        <p className="lede">
+          Kafka, Redis, and PostgreSQL as reported by the API process. Metrics:{" "}
+          <a href={`${api.url}/metrics`} target="_blank" rel="noreferrer">
+            {api.url}/metrics
+          </a>
+          . Grafana (local compose):{" "}
+          <a href="http://localhost:3000" target="_blank" rel="noreferrer">
+            http://localhost:3000
+          </a>{" "}
+          (admin/admin).
+        </p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       {health ? (
@@ -45,6 +46,7 @@ export function HealthPage() {
             Overall <span className={`badge ${health.status}`}>{health.status}</span> in{" "}
             {health.totalDurationMs.toFixed(0)} ms
           </p>
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -67,6 +69,7 @@ export function HealthPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </>
       ) : null}
     </section>

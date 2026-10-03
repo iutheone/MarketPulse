@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import type { Bar, Snapshot } from "../types";
-import { Disclaimer, SeverityBadge, formatNumber, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function StockDetailsPage() {
   const { symbol = "" } = useParams();
@@ -43,8 +43,9 @@ export function StockDetailsPage() {
 
   return (
     <section>
-      <h2>{symbol.toUpperCase()}</h2>
-      <p className="lede">Hot snapshot from Redis plus durable bars from PostgreSQL.</p>
+      <PageHeader kicker="Instrument" title={symbol.toUpperCase()}>
+        <p className="lede">Hot snapshot from Redis plus durable bars from PostgreSQL.</p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       {snapshot ? (
@@ -82,8 +83,9 @@ export function StockDetailsPage() {
         </>
       ) : null}
       <h3>History</h3>
-      {history.length === 0 ? <p className="muted">No bars stored.</p> : null}
+      {history.length === 0 ? <EmptyState>No bars stored.</EmptyState> : null}
       {history.length > 0 ? (
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -110,6 +112,7 @@ export function StockDetailsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       ) : null}
     </section>
   );

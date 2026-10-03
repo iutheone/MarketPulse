@@ -1,29 +1,39 @@
+import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+
+const links = [
+  { to: "/", label: "Dashboard", end: true },
+  { to: "/watchlists", label: "Watchlists" },
+  { to: "/rules", label: "Detection rules" },
+  { to: "/health", label: "System health" },
+  { to: "/backtests", label: "Replay / backtest" },
+  { to: "/alerts", label: "Alerts" }
+] as const;
 
 export function Layout() {
   return (
     <div className="shell">
       <nav className="side">
-        <h1>MarketPulse</h1>
-        <p>Unusual activity scanner. Not a trading product.</p>
-        <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
-          Dashboard
-        </NavLink>
-        <NavLink to="/watchlists" className={({ isActive }) => (isActive ? "active" : "")}>
-          Watchlists
-        </NavLink>
-        <NavLink to="/rules" className={({ isActive }) => (isActive ? "active" : "")}>
-          Detection rules
-        </NavLink>
-        <NavLink to="/health" className={({ isActive }) => (isActive ? "active" : "")}>
-          System health
-        </NavLink>
-        <NavLink to="/backtests" className={({ isActive }) => (isActive ? "active" : "")}>
-          Replay / backtest
-        </NavLink>
-        <NavLink to="/alerts" className={({ isActive }) => (isActive ? "active" : "")}>
-          Alerts
-        </NavLink>
+        <div className="brand">
+          <span className="mark" aria-hidden="true" />
+          <div>
+            <h1>MarketPulse</h1>
+            <p>Anomaly scanner</p>
+          </div>
+        </div>
+        <div className="nav-links">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={"end" in link ? link.end : false}
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+        <p className="nav-note">Engineering metrics only. Not a trading product.</p>
       </nav>
       <main>
         <Outlet />
@@ -32,8 +42,42 @@ export function Layout() {
   );
 }
 
+export function PageHeader({
+  kicker,
+  title,
+  children
+}: {
+  kicker?: string;
+  title: string;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="page-head">
+      {kicker ? <p className="kicker">{kicker}</p> : null}
+      <h2>{title}</h2>
+      {children}
+    </header>
+  );
+}
+
 export function SeverityBadge({ severity }: { severity: string }) {
   return <span className={`badge ${severity}`}>{severity}</span>;
+}
+
+export function ScoreMeter({ score, severity }: { score: number; severity?: string }) {
+  const width = Math.min(100, Math.max(0, score));
+  return (
+    <div className="score-meter">
+      <span className="score-num">{formatNumber(score, 1)}</span>
+      <div className="score-track" aria-hidden="true">
+        <div className={`score-fill ${severity ?? ""}`} style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  );
+}
+
+export function EmptyState({ children }: { children: ReactNode }) {
+  return <div className="empty">{children}</div>;
 }
 
 export function Disclaimer() {

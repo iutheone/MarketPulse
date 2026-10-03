@@ -70,7 +70,7 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Ok(new
 {
     service = "MarketPulse.Api",
-    phase = 9,
+    phase = 10,
     note = "Anomaly scores describe unusual activity. They are not buy/sell advice.",
     hub = AnomalyHub.Path,
     metrics = "/metrics"

@@ -13,14 +13,23 @@ public static class CsvMarketBarParser
     {
         var bars = new List<MarketBar>();
         using var reader = new StringReader(csv);
-        var header = reader.ReadLine();
+        string? header = null;
+        var lineNumber = 0;
+        while ((header = reader.ReadLine()) is not null)
+        {
+            lineNumber++;
+            if (!string.IsNullOrWhiteSpace(header) && !header.StartsWith('#'))
+            {
+                break;
+            }
+        }
+
         if (header is null)
         {
             return bars;
         }
 
         string? line;
-        var lineNumber = 1;
         while ((line = reader.ReadLine()) is not null)
         {
             lineNumber++;

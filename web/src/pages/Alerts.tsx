@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import type { AlertConfiguration, AlertDelivery } from "../types";
-import { Disclaimer, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, formatTime } from "../ui";
 
 export function AlertsPage() {
   const [configs, setConfigs] = useState<AlertConfiguration[]>([]);
@@ -54,11 +54,12 @@ export function AlertsPage() {
 
   return (
     <section>
-      <h2>Alerts</h2>
-      <p className="lede">
-        Webhooks fire after an anomaly is recorded. Delivery is asynchronous (Kafka outbox). This is not a trading
-        signal.
-      </p>
+      <PageHeader kicker="Notifications" title="Alerts">
+        <p className="lede">
+          Webhooks fire after an anomaly is recorded. Delivery is asynchronous (Kafka outbox). This is not a trading
+          signal.
+        </p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       <form className="stack" onSubmit={(event) => void onSubmit(event)}>
@@ -78,22 +79,25 @@ export function AlertsPage() {
           Save webhook
         </button>
       </form>
-      {configs.length === 0 ? <p className="muted">No webhook configs yet.</p> : null}
+      {configs.length === 0 ? <EmptyState>No webhook configs yet.</EmptyState> : null}
+      <div className="list">
       {configs.map((config) => (
-        <article className="card" key={config.id} style={{ marginBottom: 10 }}>
+        <article className="card" key={config.id}>
           <strong>
             {config.symbol} ≥ {config.minSeverity}
           </strong>
           <p className="muted">{config.destination}</p>
-          <button type="button" onClick={() => void onDelete(config.id)}>
+          <button className="ghost" type="button" onClick={() => void onDelete(config.id)}>
             Remove
           </button>
         </article>
       ))}
+      </div>
       <h3>Recent deliveries</h3>
-      {deliveries.length === 0 ? <p className="muted">No deliveries yet.</p> : null}
+      {deliveries.length === 0 ? <EmptyState>No deliveries yet.</EmptyState> : null}
+      <div className="list">
       {deliveries.map((row) => (
-        <article className="card" key={row.id} style={{ marginBottom: 10 }}>
+        <article className="card" key={row.id}>
           <strong>{row.status}</strong> · attempt {row.attemptCount} · {formatTime(row.attemptedAt)}
           <p>
             <Link to={`/anomalies/${row.anomalyId}`}>{row.anomalyId}</Link>
@@ -101,6 +105,7 @@ export function AlertsPage() {
           {row.error ? <p className="muted">{row.error}</p> : null}
         </article>
       ))}
+      </div>
     </section>
   );
 }

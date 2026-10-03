@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import type { DetectionRule } from "../types";
-import { Disclaimer, formatTime } from "../ui";
+import { Disclaimer, EmptyState, PageHeader, formatTime } from "../ui";
 
 export function DetectionRulesPage() {
   const [rules, setRules] = useState<DetectionRule[]>([]);
@@ -48,10 +48,11 @@ export function DetectionRulesPage() {
 
   return (
     <section>
-      <h2>Detection rules</h2>
-      <p className="lede">
-        Catalog only. The worker still scores from AnomalyDetection options until it is restarted.
-      </p>
+      <PageHeader kicker="Engine" title="Detection rules">
+        <p className="lede">
+          Catalog only. The worker still scores from AnomalyDetection options until it is restarted.
+        </p>
+      </PageHeader>
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       <form className="stack" onSubmit={(event) => void onSubmit(event)}>
@@ -66,7 +67,11 @@ export function DetectionRulesPage() {
           Add inactive rule
         </button>
       </form>
-      {rules.length === 0 ? <p className="muted">No rules seeded yet. Start the API once so migrations run.</p> : null}
+      {rules.length === 0 ? (
+        <EmptyState>No rules seeded yet. Start the API once so migrations run.</EmptyState>
+      ) : null}
+      {rules.length > 0 ? (
+      <div className="table-wrap">
       <table>
         <thead>
           <tr>
@@ -89,6 +94,8 @@ export function DetectionRulesPage() {
           ))}
         </tbody>
       </table>
+      </div>
+      ) : null}
     </section>
   );
 }

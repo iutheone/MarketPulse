@@ -1,0 +1,12 @@
+# Apply after building local images:
+#   docker build -f deploy/docker/Api.Dockerfile -t marketpulse-api:local .
+#   docker build -f deploy/docker/Workers.Dockerfile -t marketpulse-workers:local .
+#   docker build -f deploy/docker/Web.Dockerfile -t marketpulse-web:local .
+#   kubectl apply -f deploy/k8s/marketpulse.yaml
+# Dashboard NodePort: http://localhost:30080 (kind/k3d may need extra port mapping).
+# This is a single-replica demo, not a production cluster. Load Twelve Data via the Secret, never via git.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: marketpulse
+resources:
+  - marketpulse.yaml

@@ -2,7 +2,7 @@
 
 Real-time market-data **anomaly detection** platform (engineering/analytics). An anomaly score describes unusual volume/price behavior. It is **not** a price forecast and **not** a buy/sell recommendation.
 
-Current milestone: **Phase 9 — observability**.
+Current milestone: **Phase 10 — Docker, Kubernetes, CI**.
 
 ```
 Provider / CSV replay
@@ -33,7 +33,7 @@ dotnet user-secrets set "TwelveData:ApiKey" "<your-key>" --project src/MarketPul
 
 Or: `export TwelveData__ApiKey=...`
 
-`MarketData:Provider` is `TwelveData` or `Synthetic`. Set `Replay` to publish `samples/replay-aapl.csv` once instead of live ingestion.
+`MarketData:Provider` is `TwelveData` or `Synthetic`. Set `Replay` to publish `samples/demo-session.csv` once instead of live ingestion. That CSV mimics Twelve Data 1-minute OHLCV (no API key).
 
 ## Run locally
 
@@ -45,7 +45,7 @@ dotnet run --project src/MarketPulse.Api
 cd web && npm install && npm run dev
 ```
 
-Open http://localhost:5173. Metrics: http://localhost:5082/metrics (API) and http://localhost:9465/metrics (workers). Grafana: http://localhost:3000 (`admin`/`admin`). Prometheus: http://localhost:9091.
+Open http://localhost:5173. Same stack in containers: `docker compose --profile app up --build`. Dashboard is then http://localhost:8088 (nginx proxies `/api` and `/anomalyHub`). Metrics: http://localhost:5082/metrics (API) and http://localhost:9465/metrics (workers). Grafana: http://localhost:3000 (`admin`/`admin`). Prometheus: http://localhost:9091.
 
 Backtest **record rate** is anomalies/bars for the current rule set, not a trading hit rate.
 
@@ -57,7 +57,7 @@ Backtest **record rate** is anomalies/bars for the current rule set, not a tradi
 | --- | --- |
 | `MarketData:Provider` | `Synthetic`, `TwelveData`, or `Replay` |
 | `MarketData:Mode` | `Streaming` or `Polling` (Twelve Data forces polling) |
-| `Replay:CsvFile` | File under `samples/` when Provider is Replay |
+| `Replay:CsvFile` | File under `samples/` when Provider is Replay (default `demo-session.csv`) |
 | `TwelveData:ApiKey` | User secret / `TwelveData__ApiKey` — never commit |
 | `Kafka:BootstrapServers` | Default `localhost:9092` |
 | `Redis:ConnectionString` | Default `localhost:6379` |
@@ -87,3 +87,4 @@ Backtest **record rate** is anomalies/bars for the current rule set, not a tradi
 - [docs/adr/ADR-006-signalr-fanout.md](docs/adr/ADR-006-signalr-fanout.md)
 - [docs/adr/ADR-008-alert-outbox.md](docs/adr/ADR-008-alert-outbox.md)
 - [docs/adr/ADR-009-opentelemetry.md](docs/adr/ADR-009-opentelemetry.md)
+- [docs/adr/ADR-010-containers-ci.md](docs/adr/ADR-010-containers-ci.md)

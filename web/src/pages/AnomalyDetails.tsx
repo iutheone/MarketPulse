@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import type { Anomaly } from "../types";
-import { Disclaimer, SeverityBadge, formatNumber, formatTime } from "../ui";
+import { Disclaimer, PageHeader, ScoreMeter, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function AnomalyDetailsPage() {
   const { id = "" } = useParams();
@@ -29,7 +29,7 @@ export function AnomalyDetailsPage() {
 
   return (
     <section>
-      <h2>Anomaly</h2>
+      <PageHeader kicker="Event" title="Anomaly" />
       <Disclaimer />
       {error ? <p className="error">{error}</p> : null}
       {anomaly ? (
@@ -43,7 +43,9 @@ export function AnomalyDetailsPage() {
             </div>
             <div className="card">
               <div className="label">Score</div>
-              <div className="value">{formatNumber(anomaly.score, 1)}</div>
+              <div className="value">
+                <ScoreMeter score={anomaly.score} severity={anomaly.severity} />
+              </div>
             </div>
             <div className="card">
               <div className="label">Severity</div>
