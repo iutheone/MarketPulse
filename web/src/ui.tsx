@@ -4,9 +4,9 @@ import { NavLink, Outlet } from "react-router-dom";
 const links = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/watchlists", label: "Watchlists" },
-  { to: "/rules", label: "Detection rules" },
-  { to: "/health", label: "System health" },
-  { to: "/backtests", label: "Replay / backtest" },
+  { to: "/rules", label: "Rules" },
+  { to: "/health", label: "Health" },
+  { to: "/backtests", label: "Replay" },
   { to: "/alerts", label: "Alerts" }
 ] as const;
 
@@ -18,25 +18,29 @@ export function Layout() {
           <span className="mark" aria-hidden="true" />
           <div>
             <h1>MarketPulse</h1>
-            <p>Anomaly scanner</p>
+            <p>Anomaly console</p>
           </div>
         </div>
+        <p className="nav-kicker">Control surface</p>
         <div className="nav-links">
-          {links.map((link) => (
+          {links.map((link, index) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={"end" in link ? link.end : false}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
+              <span className="nav-idx">{String(index + 1).padStart(2, "0")}</span>
               {link.label}
             </NavLink>
           ))}
         </div>
-        <p className="nav-note">Engineering metrics only. Not a trading product.</p>
+        <p className="nav-note">Engineering scores only. Not a trading product.</p>
       </nav>
       <main>
-        <Outlet />
+        <div className="page-frame">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

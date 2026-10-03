@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import type { Bar, Snapshot } from "../types";
+import { VolumeChart } from "../charts";
 import { Disclaimer, EmptyState, PageHeader, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function StockDetailsPage() {
@@ -82,6 +83,7 @@ export function StockDetailsPage() {
           )}
         </>
       ) : null}
+      {history.length > 0 ? <VolumeChart bars={history} /> : null}
       <h3>History</h3>
       {history.length === 0 ? <EmptyState>No bars stored.</EmptyState> : null}
       {history.length > 0 ? (

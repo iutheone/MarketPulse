@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import type { Anomaly } from "../types";
+import { FeatureBars } from "../charts";
 import { Disclaimer, PageHeader, ScoreMeter, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function AnomalyDetailsPage() {
@@ -65,6 +66,15 @@ export function AnomalyDetailsPage() {
             {formatNumber(anomaly.relativeVolume)} · price {formatNumber(anomaly.priceChangePercent)}% · VWAP{" "}
             {formatNumber(anomaly.vwapDeviationPercent)}%
           </p>
+          <h3>Feature load</h3>
+          <p className="muted">Normalized against engine full-scale constants. Not a probability.</p>
+          <article className="card chart-card">
+            <FeatureBars
+              rvol={anomaly.relativeVolume}
+              price={anomaly.priceChangePercent}
+              vwap={anomaly.vwapDeviationPercent}
+            />
+          </article>
           <h3>Reasons</h3>
           <ul>
             {anomaly.reasons.map((reason) => (

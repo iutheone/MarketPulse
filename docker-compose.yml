@@ -93,6 +93,8 @@ services:
       Redis__ConnectionString: redis:6379,abortConnect=false,connectTimeout=2000
       Postgres__ConnectionString: Host=postgres;Port=5432;Database=marketpulse;Username=marketpulse;Password=marketpulse
       SignalR__AllowedOrigins__0: http://localhost:8088
+      SignalR__AllowedOrigins__1: http://localhost:5173
+      SignalR__AllowedOrigins__2: http://localhost:5174
       SignalR__UseRedisBackplane: "true"
     depends_on:
       postgres:

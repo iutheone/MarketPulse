@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api";
 import { connectAnomalyHub, type HubStatus } from "../signalr";
 import type { Anomaly, AnomalyLive } from "../types";
+import { PipelineFlow, SeverityMix, Sparkline } from "../charts";
 import { Disclaimer, EmptyState, PageHeader, ScoreMeter, SeverityBadge, formatNumber, formatTime } from "../ui";
 
 export function DashboardPage() {
@@ -91,14 +92,57 @@ export function DashboardPage() {
     [rows, error]
   );
 
+  const stats = useMemo(() => {
+    const peak = rows.reduce((max, row) => Math.max(max, row.score), 0);
+    const symbols = new Set(rows.map((row) => row.symbol)).size;
+    return { peak, symbols };
+  }, [rows]);
+
+  const scoreSeries = useMemo(
+    () => [...rows].reverse().map((row) => row.score),
+    [rows]
+  );
+
   return (
     <section>
-      <PageHeader kicker="Live feed" title="Dashboard">
+      <PageHeader kicker="Ops console · live" title="Anomaly deck">
         <p className="lede">
-          Latest recorded anomalies. Live rows arrive over SignalR; a reconnect reloads this list from REST.
+          Recorded unusual volume and price prints. Live rows arrive over SignalR; reconnect reloads from REST. This is
+          not a forecast.
         </p>
       </PageHeader>
       <Disclaimer />
+      <PipelineFlow />
+      <div className="grid stats-grid">
+        <div className="card stat">
+          <div className="label">Stored</div>
+          <div className="value">{total}</div>
+        </div>
+        <div className="card stat">
+          <div className="label">In view</div>
+          <div className="value">{rows.length}</div>
+        </div>
+        <div className="card stat">
+          <div className="label">Peak score</div>
+          <div className="value">{formatNumber(stats.peak, 1)}</div>
+        </div>
+        <div className="card stat">
+          <div className="label">Symbols</div>
+          <div className="value">{stats.symbols}</div>
+        </div>
+      </div>
+      {rows.length > 0 ? (
+        <div className="chart-grid">
+          <article className="card chart-card">
+            <div className="label">Score tape (oldest → newest in view)</div>
+            <Sparkline values={scoreSeries} />
+          </article>
+          <article className="card chart-card">
+            <div className="label">Severity mix</div>
+            <SeverityMix rows={rows} />
+          </article>
+        </div>
+      ) : null}
       <div className="toolbar">
         <input
           placeholder="Symbol"
@@ -141,8 +185,8 @@ export function DashboardPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
+            {rows.map((row, index) => (
+              <tr key={row.id} style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
                 <td>
                   <Link className="ticker" to={`/stocks/${row.symbol}`}>
                     {row.symbol}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { SystemHealth } from "../types";
+import { PipelineFlow } from "../charts";
 import { Disclaimer, PageHeader } from "../ui";
 
 export function HealthPage() {
@@ -39,13 +40,22 @@ export function HealthPage() {
         </p>
       </PageHeader>
       <Disclaimer />
+      <PipelineFlow />
       {error ? <p className="error">{error}</p> : null}
       {health ? (
         <>
-          <p>
-            Overall <span className={`badge ${health.status}`}>{health.status}</span> in{" "}
-            {health.totalDurationMs.toFixed(0)} ms
-          </p>
+          <div className="grid stats-grid">
+            <div className="card stat">
+              <div className="label">Cluster</div>
+              <div className="value">
+                <span className={`badge ${health.status}`}>{health.status}</span>
+              </div>
+            </div>
+            <div className="card stat">
+              <div className="label">Probe</div>
+              <div className="value">{health.totalDurationMs.toFixed(0)} ms</div>
+            </div>
+          </div>
           <div className="table-wrap">
           <table>
             <thead>
